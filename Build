@@ -1,0 +1,50 @@
+#! /usr/bin/perl
+
+use strict;
+use Cwd;
+use File::Spec;
+
+BEGIN {
+  $^W = 1;  # Use warnings
+  my $curdir = File::Spec->canonpath( Cwd::cwd() );
+  my $is_same_dir = $^O eq 'MSWin32' ? (Win32::GetShortPathName($curdir) eq '/Users/njh/perl/Net-SAP')
+                                       : ($curdir eq '/Users/njh/perl/Net-SAP');
+  unless ($is_same_dir) {
+    die ('This script must be run from /Users/njh/perl/Net-SAP, not '.$curdir."\n".
+	 "Please re-run the Build.PL script here.\n");
+  }
+  @INC = 
+    (
+     '/sw/lib/perl5/5.8.1/darwin-thread-multi-2level',
+     '/sw/lib/perl5/5.8.1',
+     '/sw/lib/perl5',
+     '/sw/lib/perl5/darwin',
+     '/sw/lib/perl5/5.8.1/darwin-thread-multi-2level',
+     '/sw/lib/perl5/5.8.1',
+     '/sw/lib/perl5',
+     '/System/Library/Perl/5.8.1/darwin-thread-multi-2level',
+     '/System/Library/Perl/5.8.1',
+     '/Library/Perl/5.8.1/darwin-thread-multi-2level',
+     '/Library/Perl/5.8.1',
+     '/Library/Perl',
+     '/Network/Library/Perl/5.8.1/darwin-thread-multi-2level',
+     '/Network/Library/Perl/5.8.1',
+     '/Network/Library/Perl',
+     '/Users/njh/perl/Net-SAP'
+    );
+}
+
+use Module::Build;
+
+if (-e 'Build.PL' and not Module::Build->up_to_date("Build.PL", $0)) {
+   warn "Warning: Build.PL has been altered.  You may need to run 'perl Build.PL' again.\n";
+}
+
+# This should have just enough arguments to be able to bootstrap the rest.
+my $build = Module::Build->resume (
+  properties => {
+    config_dir => '/Users/njh/perl/Net-SAP/_build',
+  },
+);
+
+$build->dispatch;

@@ -1,0 +1,48 @@
+Net-SAP version 0.06
+====================
+
+Net::SAP allows receiving and sending of SAP (RFC2974) 
+multicast packets over IPv4 and IPv6.
+
+It uses XS and C code to send and receive the multicast
+packets. I have only tested it on Linux and BSD but should 
+compile on any system with IPv6 BSD sockets support.
+
+
+INSTALLATION
+
+	I now use Module::Build to build and install the module.
+	To install this module type the following:
+	
+		perl Build.PL
+		./Build
+		./Build test
+		
+	And then as root:
+	
+		./Build install
+
+	Module::Build is available in the debian package:
+
+		libmodule-build-perl
+
+
+DEPENDENCIES
+
+	This module requires the Compress::Zlib module. It is available
+	as the Debian package libcompress-zlib-perl.
+	
+
+AUTHOR
+
+	Nicholas Humfrey, njh@ecs.soton.ac.uk
+
+
+COPYRIGHT AND LICENSE
+
+	Copyright (C) 2004 University of Southampton
+
+	This library is free software; you can redistribute it and/or modify it
+	under the same terms as Perl itself, either Perl version 5.005 or, at
+	your option, any later version of Perl 5 you may have available.
+
