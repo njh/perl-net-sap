@@ -16,7 +16,7 @@ use Net::SAP::Packet;
 
 use vars qw/$VERSION $PORT/;
 
-$VERSION="0.07";
+$VERSION="0.08";
 $PORT=9875;
 
 
@@ -293,7 +293,7 @@ Nicholas Humfrey, njh@ecs.soton.ac.uk
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2004 University of Southampton
+Copyright (C) 2004,2005 University of Southampton
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.005 or,
