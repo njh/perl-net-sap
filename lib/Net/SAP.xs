@@ -152,11 +152,11 @@ _xs_socket_set_timeout(socket,timeout)
 HV *
 _xs_socket_recv(socket)
 	mcast_socket_t* socket
-  CODE:
+  PREINIT:
 	char buffer[SAP_BUFFER_SIZE];
 	char from[NI_MAXHOST];
 	int size;
-
+  CODE:
 	size = mcast_socket_recv(
 				socket,
 				buffer, SAP_BUFFER_SIZE, 
@@ -186,9 +186,10 @@ int
 _xs_socket_send(socket,data)
 	mcast_socket_t* socket
 	SV* data
-  CODE:
+  PREINIT:
 	STRLEN data_len;
 	char * data_ptr;
+  CODE:
 	data_ptr = SvPV(data, data_len);
 	RETVAL = mcast_socket_send( socket, data_ptr, data_len);
   OUTPUT:
@@ -311,11 +312,11 @@ _xs_origin_addr(family)
 unsigned short
 _xs_16bit_hash( data )
 	SV* data
-  CODE:
+  PREINIT:
 	STRLEN data_len;
 	char * data_ptr;
 	Fnv32_t hash;
-
+  CODE:
   	if (data==NULL) XSRETURN_UNDEF;
 	data_ptr = SvPV(data, data_len);
 
