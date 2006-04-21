@@ -10,7 +10,8 @@ use Data::Dumper;
 use strict;
 
 
-my $sap = Net::SAP->new( 'ipv6-global' );
+#my $sap = Net::SAP->new( 'ipv6-global' );
+my $sap = Net::SAP->new( 'ipv4-global' );
 die "Failed to create Net::SAP" unless ($sap);
 
 while(1) {

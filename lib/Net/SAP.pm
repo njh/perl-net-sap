@@ -16,7 +16,7 @@ use Net::SAP::Packet;
 
 use vars qw/$VERSION $PORT/;
 
-$VERSION="0.08";
+$VERSION="0.09";
 $PORT=9875;
 
 
@@ -24,7 +24,10 @@ $PORT=9875;
 # User friendly names for multicast groups
 my %groups = (
 	'ipv4'=>		'224.2.127.254',
+	'ipv4-local'=>	'239.255.255.255',
+	'ipv4-org'=>	'239.195.255.255',
 	'ipv4-global'=>	'224.2.127.254',
+	
 	'ipv6-node'=>	'FF01::2:7FFE',
 	'ipv6-link'=>	'FF02::2:7FFE',
 	'ipv6-site'=>	'FF05::2:7FFE',
@@ -212,7 +215,9 @@ multicast packets over IPv4 and IPv6.
 The new() method is the constructor for the C<Net::SAP> class.
 You must specify the SAP multicast group you want to join:
 
-	ipv4
+	ipv4-local
+	ipv4-org
+	ipv4-global
 	ipv6-node
 	ipv6-link
 	ipv6-site
@@ -293,7 +298,7 @@ Nicholas Humfrey, njh@ecs.soton.ac.uk
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2004,2005 University of Southampton
+Copyright (C) 2004,2005,2006 University of Southampton
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.005 or,

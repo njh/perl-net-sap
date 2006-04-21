@@ -1,5 +1,10 @@
 Revision history for Perl extension Net::SAP.
 
+0.09  Fri Apr 21 22:24:36 BST 2006
+	Added Makefile.PL compatibility
+	Added IPv4 addresses for relative scoping
+	Changed multicast group in example to ipv4-global
+
 0.08  
 	Removed unistd.h from mcast_socket.c
 	Add seperate variable declarations in SAP.xs

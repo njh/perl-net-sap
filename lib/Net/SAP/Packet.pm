@@ -14,7 +14,7 @@ use Carp;
 
 use vars qw/$VERSION/;
 
-$VERSION="0.07";
+$VERSION="0.09";
 
 
 
