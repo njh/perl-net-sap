@@ -1,2 +1,0 @@
-TYPEMAP
-mcast_socket_t *	T_PTROBJ

@@ -1,11 +1,5 @@
 lib/Net/SAP.pm
-lib/Net/SAP.xs
-lib/Net/typemap
 lib/Net/SAP/Packet.pm
-src/mcast_socket.c
-src/mcast_socket.h
-src/hash_32.c
-src/fnv.h
 t/00use.t
 t/10address.t
 Changes

@@ -1,35 +1,16 @@
-
 use strict;
-use Test;
+use Test::More tests => 3;
 
 
-# use a BEGIN block so we print our plan before Net::SAP is loaded
-BEGIN { plan tests => 3 }
-
-# load Net::SAP
-use Net::SAP;
-
-
-# Helpful notes.  All note-lines must start with a "#".
-print "# I'm testing Net::SAP version $Net::SAP::VERSION\n";
-
-# Module has loaded sucessfully 
-ok(1);
-
+# Check that the module loads ok
+BEGIN { use_ok( 'Net::SAP' ); }
 
 
 # Now try creating a new Net::SAP object
-my $sap = Net::SAP->new('ipv4');
-
-ok( $sap );
-
+my $sap = new Net::SAP('ipv4');
+ok( $sap, "Creating Net::SAP object" );
 
 
 # Close the socket
 $sap->close();
-
-ok(1);
-
-
-exit;
-
+pass( "Closing socket" );

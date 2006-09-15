@@ -5,8 +5,9 @@
 # using Data::Dumper.
 #
 
-use Net::SAP;
+use lib '../blib/lib','../blib/arch';
 use Data::Dumper;
+use Net::SAP;
 use strict;
 
 

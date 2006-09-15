@@ -10,6 +10,8 @@ package Net::SAP::Packet;
 
 use strict;
 use Compress::Zlib;
+use Socket qw/ AF_INET /;
+use Socket6 qw/ AF_INET6 inet_ntop inet_pton /;
 use Carp;
 
 use vars qw/$VERSION/;
@@ -89,10 +91,10 @@ sub parse {
  	# Decide the origin address to a string
  	if ($self->{'a'} == 0) {
  		# IPv4 address
- 		$self->{'origin_address'} = Net::SAP::_xs_ipaddr_to_str( 'ipv4', substr($data,$pos,4) ); $pos+=4;
+ 		$self->{'origin_address'} = inet_ntop( AF_INET, substr($data,$pos,4) ); $pos+=4;
  	} else {
  		# IPv6 address
- 		$self->{'origin_address'} = Net::SAP::_xs_ipaddr_to_str( 'ipv6', substr($data,$pos,16) ); $pos+=16;
+ 		$self->{'origin_address'} = inet_ntop( AF_INET6, substr($data,$pos,16) ); $pos+=16;
  	}
  	
  	
@@ -110,7 +112,7 @@ sub parse {
 	if ($self->{'c'}) {
 		my $inf = inflateInit();
 		unless (defined $inf) {
-			warn "Failed to initalise zlib to decompress SAP packet.";
+			warn "Failed to initialize zlib to decompress SAP packet.";
 			return -1;
 		} else {
 			$payload = $inf->inflate( $payload );
@@ -151,21 +153,21 @@ sub generate {
 	$vartec |= (($self->{'a'} & 0x1) << 4);	# Address type (0=v4, 1=v6)
 #	$vartec |= (($self->{'r'} & 0x1) << 3);	# Reserved
 	$vartec |= (($self->{'t'} & 0x1) << 2);	# Message Type (0=announce, 1=delete)
-	$vartec |= (($self->{'e'} & 0x1) << 1);	# Encryped (0=no, 1=yes)
+	$vartec |= (($self->{'e'} & 0x1) << 1);	# Encrypted (0=no, 1=yes)
 	$vartec |= (($self->{'c'} & 0x1) << 0);	# Compressed (0=no, 1=yes)
 
 
 	# Calculate hash for packet
-	$self->{'msg_id_hash'} = Net::SAP::_xs_16bit_hash( $self->{'payload'} );
+	#$self->{'msg_id_hash'} = Net::SAP::_xs_16bit_hash( $self->{'payload'} );
 	
 	
 	# Build packet header
 	my $data = pack("CCn", $vartec, $self->{'auth_len'}, $self->{'msg_id_hash'});
 	
 	# Append the Originating Source address
-	$data .= Net::SAP::_xs_str_to_ipaddr(
-				$self->origin_address_type(),
-				$self->origin_address() );
+	#$data .= Net::SAP::_xs_str_to_ipaddr(
+	#			$self->origin_address_type(),
+	#			$self->origin_address() );
 	
 	
 	# Append authentication data
@@ -179,7 +181,7 @@ sub generate {
 	if ($self->{'c'}) {
 		my $def = deflateInit();
 		unless (defined $def) {
-			warn "Failed to initalise zlib to compress SAP packet.";
+			warn "Failed to initialize zlib to compress SAP packet.";
 			return undef;
 		} else {
 			$payload = $def->deflate( $payload );
@@ -221,6 +223,7 @@ sub origin_address_type {
 	if ($self->{'a'}) 	{ return 'ipv6'; }
 	else				{ return 'ipv4'; }
 }
+
 
 sub origin_address {
 	my $self = shift;
@@ -432,7 +435,7 @@ Example:
 =item B<version()>
 
 Get the SAP version number of a received packet. Usually 1 or 0.
-See the end of rfc2974 for a description of the difference between 
+See the end of RFC2974 for a description of the difference between 
 packet versions. All packets created using C<Net::SAP> are version 1.
 
 

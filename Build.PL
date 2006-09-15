@@ -12,8 +12,9 @@ my $build = Module::Build->new
 	},
 	requires => {
 		'perl'	=> '5.5.0',
+		'IO::Socket::Multicast6' => 0,
 		'Compress::Zlib' => '1.14',
-		'Test' => '1.00',
+		'Test::More' => 0,
 		'Getopt::Std' => 0,
 		'Pod::Usage' => 0,
 		'Data::Dumper' => 0,
@@ -24,8 +25,6 @@ my $build = Module::Build->new
 	recommends => {
 		'Net::SDP' => 0,
 	},
-	include_dirs => [ 'src' ],
-	c_source => 'src',
 );
 
 $build->create_build_script;
