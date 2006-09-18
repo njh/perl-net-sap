@@ -12,6 +12,8 @@ use strict;
 use Carp;
 
 use Net::SAP::Packet;
+use Socket qw/ unpack_sockaddr_in /;
+use Socket6 qw/ inet_ntop inet_pton unpack_sockaddr_in6 /;
 use IO::Socket::Multicast6;
 
 use vars qw/$VERSION/;

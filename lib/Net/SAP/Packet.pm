@@ -11,8 +11,8 @@ package Net::SAP::Packet;
 use strict;
 use Compress::Zlib;
 use IO::Interface::Simple;
-use Socket qw/ AF_INET unpack_sockaddr_in /;
-use Socket6 qw/ AF_INET6 inet_ntop inet_pton unpack_sockaddr_in6 /;
+use Socket qw/ AF_INET /;
+use Socket6 qw/ AF_INET6 inet_ntop inet_pton /;
 use Carp;
 
 use vars qw/$VERSION/;
@@ -30,7 +30,7 @@ sub new {
     	'v'	=> 1,	# Version (1)
     	'a'	=> 0,	# Address type (0=v4, 1=v6)
     	't'	=> 0,	# Message Type (0=announce, 1=delete)
-    	'e'	=> 0,	# Encryped (0=no, 1=yes)
+    	'e'	=> 0,	# Encrypted (0=no, 1=yes)
     	'c'	=> 0,	# Compressed (0=no, 1=yes)
     	'origin_address' => undef,	# No Origin
     	'msg_id_hash' => 0,       	# No Message Hash
