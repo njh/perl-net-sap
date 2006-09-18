@@ -10,13 +10,14 @@ package Net::SAP::Packet;
 
 use strict;
 use Compress::Zlib;
-use Socket qw/ AF_INET /;
-use Socket6 qw/ AF_INET6 inet_ntop inet_pton /;
+use IO::Interface::Simple;
+use Socket qw/ AF_INET unpack_sockaddr_in /;
+use Socket6 qw/ AF_INET6 inet_ntop inet_pton unpack_sockaddr_in6 /;
 use Carp;
 
 use vars qw/$VERSION/;
 
-$VERSION="0.09";
+$VERSION="0.10";
 
 
 
@@ -31,8 +32,8 @@ sub new {
     	't'	=> 0,	# Message Type (0=announce, 1=delete)
     	'e'	=> 0,	# Encryped (0=no, 1=yes)
     	'c'	=> 0,	# Compressed (0=no, 1=yes)
-    	'origin_address' => '',   # No Origin
-    	'msg_id_hash' => 0,       # No Message Hash
+    	'origin_address' => undef,	# No Origin
+    	'msg_id_hash' => 0,       	# No Message Hash
     	'auth_len'	=> 0,
     	'auth_data'	=> '',
     	'payload_type'	=> 'application/sdp',
@@ -84,7 +85,7 @@ sub parse {
  	
 	
  	$self->{'auth_len'} = $auth_len;
- 	$self->{'msg_id_hash'} = sprintf("%6.6d", $id_hash);
+ 	$self->{'msg_id_hash'} = int($id_hash);
 # 	$self->{'msg_id_hash'} = sprintf("0x%4.4X", $id_hash);
  	
  	
@@ -144,6 +145,25 @@ sub parse {
 
 
 
+sub _crc16 {
+	my ($data) = @_;
+	my $crc = 0;
+	
+	for (my $i=0; $i<length($data); $i++) {
+		$crc = $crc ^ ord(substr($data,$i,1)) << 8;
+		for( my $b=0; $b<8; $b++ ) {
+			if ($crc & 0x8000) {
+				$crc = $crc << 1 ^ 0x1021;
+			} else {
+				$crc = $crc << 1;
+			}
+		}
+	}
+	
+	return $crc & 0xFFFF;
+}
+
+
 sub generate {
 	my $self = shift;
 
@@ -158,18 +178,31 @@ sub generate {
 
 
 	# Calculate hash for packet
-	#$self->{'msg_id_hash'} = Net::SAP::_xs_16bit_hash( $self->{'payload'} );
+	$self->{'msg_id_hash'} = _crc16( $self->{'payload'} );
 	
 	
 	# Build packet header
 	my $data = pack("CCn", $vartec, $self->{'auth_len'}, $self->{'msg_id_hash'});
 	
+	# Don't generate packet unless origin has been set
+	if ($self->origin_address() eq '') {
+		$self->_choose_origin_address();
+		if ($self->origin_address() eq '') {
+			croak("Failed to detect origin address: you must set an origin address before sending packets.");
+		}
+	}
+
+
 	# Append the Originating Source address
-	#$data .= Net::SAP::_xs_str_to_ipaddr(
-	#			$self->origin_address_type(),
-	#			$self->origin_address() );
+ 	if ($self->{'a'} == 0) {
+ 		# IPv4 address
+ 		$data .= inet_pton( AF_INET, $self->{'origin_address'} );
+ 	} else {
+ 		# IPv6 address
+ 		$data .= inet_pton( AF_INET6, $self->{'origin_address'} );
+ 	}
 	
-	
+
 	# Append authentication data
 	$data .= $self->{'auth_data'};
 	
@@ -201,9 +234,67 @@ sub generate {
 }
 
 
+## Find a public interface address for origin IP
+#
+sub _choose_origin_address {
+	my $self = shift;
+	
+	# There isn't any support for IPv6 in IO::Interface
+	# so we will just try and use a public v4 address
+	my @interfaces = IO::Interface::Simple->interfaces;
+	foreach my $if (@interfaces) {
+		my $addr = $if->address();
 
+		next if ($if->is_loopback());
+		next unless (_addr_is_public( $addr ) );
+		
+		# Must be ok then: store it
+		$self->origin_address($addr);
+		$self->origin_address_type('ipv4');
+		
+		# Success
+		return 1;
+	}
+	
+	# Failure
+	return 0;
+}
 
+## Returns true if IP is a global IPv4 address
+#
+sub _addr_is_public {
+	my ($addr) = @_;
+	
+	# Check it looks like an IPv4 address
+	return 0 unless (defined $addr);
+	my ($a,$b,$c,$d) = ($addr =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
+	return 0 unless (defined $a);
+	
+	# 10.0.0.0/8 is private address space
+	return 0 if ($a==10);
+	
+	# 172.16.0.0/12 is private address space
+	return 0 if ($a==172 and $b==16 and $c<=31 and $c>=16);
 
+	# 192.168.0.0/16 is private address space
+	return 0 if ($a==192 and $b==168);
+
+	# 169.254.0.0/16 is link-local address space
+	return 0 if ($a==169 and $b==254);
+
+	# 127.0.0.0/8 is reserved/localhost
+	return 0 if ($a==127);
+
+	# 0.0.0.0/8 is reserved address space
+	return 0 if ($a==0);
+
+	# 1.0.0.0/8 is reserved address space
+	return 0 if ($a==1);
+	
+
+	# Otherwise global
+	return 1;
+}
 
 sub origin_address_type {
 	my $self = shift;
@@ -508,7 +599,7 @@ Nicholas Humfrey, njh@ecs.soton.ac.uk
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2004 University of Southampton
+Copyright (C) 2004-2006 University of Southampton
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.005 or,

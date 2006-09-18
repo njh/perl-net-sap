@@ -2,7 +2,7 @@ package Net::SAP;
 
 ################
 #
-# SAP: Session Announcement Protocol (rfc2974)
+# SAP: Session Announcement Protocol (RFC2974)
 #
 # Nicholas J Humfrey
 # njh@cpan.org
@@ -12,8 +12,6 @@ use strict;
 use Carp;
 
 use Net::SAP::Packet;
-use Socket qw/ AF_INET unpack_sockaddr_in /;
-use Socket6 qw/ AF_INET6 inet_ntop unpack_sockaddr_in6 /;
 use IO::Socket::Multicast6;
 
 use vars qw/$VERSION/;
@@ -146,15 +144,6 @@ sub send {
 		$packet->payload( $data );
 	}
 
-
-	# Don't transmit the packet unless origin has been set
-	if ($packet->origin_address() eq '') {
-		croak("You must set an origin address before sending packets.");
-		#$packet->origin_address_type( $self->{'family'} );
-		#$packet->origin_address( 
-		#	_xs_origin_addr( $self->{'family'} )
-		#);
-	}
 	
 	# Assemble and send the packet
 	my $data = $packet->generate();
@@ -165,9 +154,11 @@ sub send {
 		warn "Packet is more than 1024 bytes, not sending.";
 		return -1;
 	} else {
-		return _xs_socket_send( $self->{'sock'}, $data );
+		return $self->{'sock'}->mcast_send( $data, $self->{'group'}.":".$self->{'port'} );
 	}
 }
+
+
 
 
 sub close {
@@ -276,15 +267,11 @@ Leave the SAP multicast group and close the socket.
 
 =over
 
-=item re-add automatic detection of origin address
+=item add automatic detection of IPv6 origin address
 
 =item add method of choosing the network interface to use for multicast
 
-=item ensure that only public v4 addresses are used as origin
-
 =item Packet decryption and validation
-
-=item Improve test script ?
 
 =back
 
@@ -307,7 +294,7 @@ Nicholas J Humfrey, njh@cpan.org
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2004,2005,2006 University of Southampton
+Copyright (C) 2004-2006 University of Southampton
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.005 or,
