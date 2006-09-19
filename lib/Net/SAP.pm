@@ -54,20 +54,21 @@ sub new {
 	# Store parameters
     my $self = {
     	'group'	=> $group,
-    	'port'	=> $SAP_PORT,
-    	'hops'	=> 127,
+    	'port'	=> $SAP_PORT
     };
     
     
     # Create Multicast Socket
-	$self->{'sock'} = new IO::Socket::Multicast6(
+	$self->{'socket'} = new IO::Socket::Multicast6(
 			LocalAddr => $self->{'group'},
 			LocalPort => $SAP_PORT )
 	|| return undef;
-
+	
+	# Set the TTL for transmitted packets
+	$self->{'socket'}->mcast_ttl( 127 );
 	
 	# Join the multicast group
-	$self->{'sock'}->mcast_add( $self->{'group'} ) ||
+	$self->{'socket'}->mcast_add( $self->{'group'} ) ||
 	die "Failed to join multicast group: $!";
 	
 
@@ -86,6 +87,23 @@ sub group {
 
 
 #
+# Sets the TTL for packets sent
+#
+sub ttl {
+	my $self = shift;
+	my ($ttl) = @_;
+	
+	# Set new TTL if specified
+	if (defined $ttl) {
+		return undef if ($ttl<0 or $ttl>127);
+		$self->{'socket'}->mcast_ttl($ttl);
+	}
+
+	return $self->{'socket'}->mcast_ttl();
+}
+
+
+#
 # Blocks until a valid SAP packet is received
 #
 sub receive {
@@ -97,7 +115,7 @@ sub receive {
 	
 		# Receive a packet
 		my $data = undef;
-		my $from = $self->{'sock'}->recv( $data, 1500 );
+		my $from = $self->{'socket'}->recv( $data, 1500 );
 		die "Failed to receive packet: $!" unless (defined $from);
 		next unless (defined $data and length($data));
 		
@@ -156,19 +174,17 @@ sub send {
 		warn "Packet is more than 1024 bytes, not sending.";
 		return -1;
 	} else {
-		return $self->{'sock'}->mcast_send( $data, $self->{'group'}.":".$self->{'port'} );
+		return $self->{'socket'}->mcast_send( $data, $self->{'group'}, $self->{'port'} );
 	}
 }
-
-
 
 
 sub close {
 	my $self=shift;
 	
 	# Close the multicast socket
-	$self->{'sock'}->close();
-	undef $self->{'sock'};
+	$self->{'socket'}->close();
+	undef $self->{'socket'};
 	
 }
 
@@ -176,7 +192,7 @@ sub close {
 sub DESTROY {
     my $self=shift;
     
-    if (exists $self->{'sock'} and defined $self->{'sock'}) {
+    if (exists $self->{'socket'} and defined $self->{'socket'}) {
     	$self->close();
     }
 }
@@ -258,6 +274,10 @@ returns 0 if packet was sent successfully.
 
 Returns the address of the multicast group that the socket is bound to.
 
+
+=item $ttl = $sap->ttl( [$value] )
+
+Gets or sets the TTL of outgoing packets.
 
 =item $sap->close()
 

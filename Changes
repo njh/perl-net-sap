@@ -1,5 +1,11 @@
 Revision history for Perl extension Net::SAP.
 
+
+0.10  Tue Sep 19 16:16:29 BST 2006
+	Converted to pure-perl module that uses IO::Socket::Multicast6
+	Added ttl() method to Net::SAP
+	Added tests for Net::SAP::Packet methods 
+
 0.09  Fri Apr 21 22:24:36 BST 2006
 	Added Makefile.PL compatibility
 	Added IPv4 addresses for relative scoping
