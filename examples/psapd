@@ -5,8 +5,8 @@
 #
 # Copyright (C) 2004 University of Southampton
 #
-# Nicholas Humfrey
-# njh@ecs.soton.ac.uk
+# Nicholas J Humfrey
+# njh@cpan.org
 #
 
 use strict;
@@ -204,7 +204,7 @@ Be Quiet. Disables informative messages.
 
 =head1 AUTHOR
 
-Nicholas Humfrey, njh@ecs.soton.ac.uk
+Nicholas J Humfrey, njh@cpan.org
 
 =head1 COPYRIGHT AND LICENSE
 
